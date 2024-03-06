@@ -29,3 +29,16 @@ function getIntersection(a, b) {
   // var y = (a[0].y + a[1].y + b[0].y + b[1].y) / 4;
   return res;
 }
+
+function sidesAreEqual(a, b) {
+	// console.log("sides", a, b);
+	// console.log(a[0].equals(b[0]));
+	// console.log(a[1].equals(b[1]));
+	// console.log(a[1].equals(b[0]));
+	// console.log(a[0].equals(b[1]));
+	if((a[0].equals(b[0]) && a[1].equals(b[1])) ||
+			a[1].equals(b[0]) && a[0].equals(b[1])) {
+				return true;
+			}
+	return false;
+}
