@@ -42,3 +42,11 @@ function sidesAreEqual(a, b) {
 			}
 	return false;
 }
+
+function getMiddle(pt1, pt2) {
+  return createVector((pt1.x + pt2.x)/2, (pt1.y + pt2.y)/2);
+}
+
+function calcLen(side) {
+  return p5.Vector.sub(side[0], side[1]).mag();
+}
