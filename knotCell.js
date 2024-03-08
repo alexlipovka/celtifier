@@ -182,7 +182,8 @@ class KnotCell {
 		circle(cen.x, cen.y, knotSpacing);
 		for(var iOff = 0; iOff < 4; iOff++) {
 			this.drawBezier(getMiddle(this.kPts[(3+iOff)%4], this.kPts[(0+iOff)%4]), this.kPts[(0+iOff)%4], 
-				this.kPts[(0+iOff)%4], getMiddle(this.kPts[(0+iOff)%4], this.kPts[(1+iOff)%4]), calcLen([this.kPts[(3+iOff)%4], this.kPts[(0+iOff)%4]])*0.5);
+				this.kPts[(0+iOff)%4], getMiddle(this.kPts[(0+iOff)%4], this.kPts[(1+iOff)%4]), 
+				calcLen([this.kPts[(3+iOff)%4], this.kPts[(0+iOff)%4]])*0.3, calcLen([this.kPts[(1+iOff)%4], this.kPts[(0+iOff)%4]])*0.3);
 		}
 	}
 
