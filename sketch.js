@@ -6,8 +6,8 @@ var ptsI = [];
 var ptsO = [];
 var knotCells = [];
 var margin = 50;
-var numC = 1;
-var numR = 1;
+var numC = 7;
+var numR = 8;
 
 function generateKnotCells() {
   var gridW = (width - 2 * margin) / (numC);
@@ -129,13 +129,16 @@ function keyPressed(e) {
     checkKnotLinks();
   } else if(e.key == 'w') {
     knotSpacing += 5;
-    knotCells.length = 0;
-    generateKnotCells();
+    // knotCells.length = 0;
+    // generateKnotCells();
     checkKnotLinks();
   } else if(e.key == 's') {
     knotSpacing -= 5;
-    knotCells.length = 0;
-    generateKnotCells();
+    // knotCells.length = 0;
+    // generateKnotCells();
+    if(knotSpacing <= 0) {
+      knotSpacing = 0;
+    }
     checkKnotLinks();
   } else if(e.key =='r') {
     mouseOverKnot()?.shiftOrder();

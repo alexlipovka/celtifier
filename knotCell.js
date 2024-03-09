@@ -66,6 +66,7 @@ class KnotCell {
 		} else if (!this.links[0] && this.links[1] && !this.links[2] && this.links[3]) {
 			this.kType = knotTypes.col;
 		}
+		this.calcPts(); 
 	}
 
 	resetLinks() {
@@ -100,6 +101,9 @@ class KnotCell {
 	calcPts() {
 		var diags = [];
 		var sides = [];
+		this.pto.length = 0;
+		this.ptb.length = 0;
+		this.pti.length = 0;
 		for (var i = 0; i < 4; i++) {
 			sides.push([this.kPts[i], this.kPts[(i + 1) % 4]]);
 			diags.push(getParallelLine(this.kPts[i], this.kPts[((i + 2) % 4)], knotSpacing / 2));
