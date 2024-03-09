@@ -6,8 +6,8 @@ var ptsI = [];
 var ptsO = [];
 var knotCells = [];
 var margin = 50;
-var numC = 7;
-var numR = 8;
+var numC = 4;
+var numR = 6;
 
 function generateKnotCells() {
   var gridW = (width - 2 * margin) / (numC);
