@@ -26,6 +26,7 @@ class KnotCell {
 		this.pti = [];
 		this.pto = [];
 		this.ptb = [];
+		this.cen;
 		this.calcPts();
 		this.links = [false, false, false, false]; //left, bottom, right, top
 	}
@@ -89,12 +90,7 @@ class KnotCell {
 	}
 
 	shiftOrder() {
-		// var pts = [];
-		// for(var i = 0; i < 4; i++) {
-		// 	pts.push(this.kPts[(I=1)%4]);
-		// }
-		this.kPts.splice(4, 0, this.kPts[0]);
-		this.kPts.shift();
+		this.kPts.reverse();
 		this.calcPts();
 	}
 
@@ -104,29 +100,21 @@ class KnotCell {
 		this.pto.length = 0;
 		this.ptb.length = 0;
 		this.pti.length = 0;
-		var t = 0.1;
+		var t = 0.3;
 		for (var i = 0; i < 4; i++) {
 			sides.push([this.kPts[i], this.kPts[(i + 1) % 4]]);
-			diags.push(getParallelLine(this.kPts[i], this.kPts[((i + 2) % 4)], knotSpacing / 2));
 		}
 		for (var i = 0; i < 4; i++) {
-			stroke(255 * (i + 1) / 4, 0, 0);
-			// line(sides[i][0].x, sides[i][0].y, sides[i][1].x, sides[i][1].y);
-			stroke(0, 255 * (i + 1) / 4, 0);
-			// line(diags[i][0].x, diags[i][0].y, diags[i][1].x, diags[i][1].y);
-			stroke(0, 0, 255 * (i + 1) / 4);
-			// this.pto.push(getIntersection(sides[i], diags[(i) % 4]));
 			this.pto.push(p5.Vector.lerp(sides[i][0], sides[i][1], t));
 			this.ptb.push(p5.Vector.lerp(sides[(i + 3) % 4][0], sides[(i + 3) % 4][1], (1-t)));
-			// this.ptb.push(getIntersection(sides[(i + 3) % 4], diags[(i + 2) % 4]));
-			// circle(pt.x, pt.y, 10);
-			// this.pti.push(getIntersection(diags[i], diags[(i + 3) % 4]));
-			// circle(pti.x, pti.y, 10);
 		}
 		for(var i = 0; i < 4; i++) {
-			this.pti.push(p5.Vector.lerp(this.pto[i], this.ptb[(i + 2) % 4], (1-t*2)/((1-t)*2)));
+			this.pti.push(getIntersection([this.pto[(i+0)%4], this.ptb[(i + 2)%4]], [this.pto[(i+3)%4], this.ptb[(i + 1)%4]]));
 		}
-
+		this.cen = getIntersection([this.kPts[0], this.kPts[2]], [this.kPts[1], this.kPts[3]]);
+		if(!this.ptInKnotCell(this.cen)) {
+			this.shiftOrder();
+		}
 	}
 
 	drawCell() {
@@ -173,6 +161,18 @@ class KnotCell {
 		pop();
 	}
 
+	drawConstruction() {
+		noFill();
+		for(var i = 0; i < 4; i++) {
+			strokeWeight(1);
+			stroke(150);
+			line(this.pto[(i)%4].x, this.pto[(i)%4].y, this.ptb[(i + 2)%4].x, this.ptb[(i + 2)%4].y);
+			strokeWeight(4);
+			stroke(255, 0, 0);
+			point(this.pti[i].x, this.pti[i].y);
+		}
+	}
+
 	drawEdge(iOff) {
 		stroke(0);
 		strokeWeight(4);
@@ -194,15 +194,24 @@ class KnotCell {
 	}
 
 	drawIsland() {
+		// this.calcPts();
 		stroke(20);
 		strokeWeight(4);
 		noFill();
-		var cen = getIntersection([this.kPts[0], this.kPts[2]], [this.kPts[1], this.kPts[3]]);
-		circle(cen.x, cen.y, knotSpacing);
+		// var cen = getIntersection([this.kPts[0], this.kPts[2]], [this.kPts[1], this.kPts[3]]);
+		var mid = [];
+		for(var i = 0; i < 4; i++) {
+			mid.push(getMiddle(this.pti[i], this.pti[(i+1)%4]));
+		}
+		// circle(cen.x, cen.y, knotSpacing);
 		for(var iOff = 0; iOff < 4; iOff++) {
 			this.drawBezier(getMiddle(this.kPts[(3+iOff)%4], this.kPts[(0+iOff)%4]), this.kPts[(0+iOff)%4], 
 				this.kPts[(0+iOff)%4], getMiddle(this.kPts[(0+iOff)%4], this.kPts[(1+iOff)%4]), 
 				calcLen([this.kPts[(3+iOff)%4], this.kPts[(0+iOff)%4]])*0.3, calcLen([this.kPts[(1+iOff)%4], this.kPts[(0+iOff)%4]])*0.3);
+			this.drawBezier(mid[iOff], this.pti[(iOff + 1) % 4],
+				this.pti[(iOff + 1) % 4], mid[(iOff+1)%4],
+				calcLen([this.pti[(iOff) % 4], this.pti[(1 + iOff) % 4]])*0.25,
+				calcLen([this.pti[(1 + iOff) % 4], this.pti[(2 + iOff) % 4]])*0.25);
 		}
 	}
 
@@ -224,7 +233,8 @@ class KnotCell {
 		var mid1 = getMiddle(this.pti[(1 + iOff) % 4], this.pti[(2 + iOff) % 4]);
 		var mid2 = getMiddle(this.pti[(2 + iOff) % 4], this.pti[(3 + iOff) % 4]);
 		var mid3 = getMiddle(this.pti[(3 + iOff) % 4], this.pti[(0 + iOff) % 4]);
-		line(mid1.x, mid1.y, this.pto[(1 + iOff) % 4].x, this.pto[(1 + iOff) % 4].y);
+		line(this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y, this.pto[(1 + iOff) % 4].x, this.pto[(1 + iOff) % 4].y);
+		line(mid1.x, mid1.y, this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y);
 		line(mid0.x, mid0.y, this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y);
 		this.drawBezier(mid1, this.pti[(2 + iOff) % 4],
 			this.pti[(2 + iOff) % 4], mid2,
@@ -252,8 +262,10 @@ class KnotCell {
 		var mid1 = getMiddle(this.pti[(1 + iOff) % 4], this.pti[(2 + iOff) % 4]);
 		var mid2 = getMiddle(this.pti[(2 + iOff) % 4], this.pti[(3 + iOff) % 4]);
 		var mid3 = getMiddle(this.pti[(3 + iOff) % 4], this.pti[(0 + iOff) % 4]);
-		line(mid1.x, mid1.y, this.pto[(1 + iOff) % 4].x, this.pto[(1 + iOff) % 4].y);
-		line(mid3.x, mid3.y, this.pto[(3 + iOff) % 4].x, this.pto[(3 + iOff) % 4].y);
+		line(this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y, this.pto[(1 + iOff) % 4].x, this.pto[(1 + iOff) % 4].y);
+		line(mid1.x, mid1.y, this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y);
+		line(this.pti[(3 + iOff) % 4].x, this.pti[(3 + iOff) % 4].y, this.pto[(3 + iOff) % 4].x, this.pto[(3 + iOff) % 4].y);
+		line(mid3.x, mid3.y, this.pti[(3 + iOff) % 4].x, this.pti[(3 + iOff) % 4].y);
 		line(mid0.x, mid0.y, this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y);
 		line(mid2.x, mid2.y, this.pti[(3 + iOff) % 4].x, this.pti[(3 + iOff) % 4].y);
 		this.drawBezier(mid1, this.pti[(2 + iOff) % 4],
@@ -303,6 +315,7 @@ class KnotCell {
 
 	draw() {
 		// this.drawCell();
+		// this.drawConstruction();
 		// this.drawPtsIndex();
 		noFill();
 
@@ -343,41 +356,25 @@ class KnotCell {
 	}
 
 	checkCommonBorder(knot) {
-		// console.log(knot);
-		// noLoop();
-		if (sidesAreEqual(this.getLeft(), knot.getRight())) {
-			// console.log('left')
-			this.links[0] = true;
-			// this.checkType();
-			// knot.links[2] = true;
-			// knot.checkType();
-			// return true;
-		} else
-		if (sidesAreEqual(this.getBottom(), knot.getTop())) {
-			// console.log('botom')
-			this.links[1] = true;
-			// this.checkType();
-			// knot.links[3] = true;
-			// knot.checkType();
-			// return true;
-		} else
-		if (sidesAreEqual(this.getRight(), knot.getLeft())) {
-			// console.log('right')
-			this.links[2] = true;
-			// this.checkType();
-			// knot.links[0] = true;
-			// knot.checkType();
-			// return true;
-		} else
-		if (sidesAreEqual(this.getTop(), knot.getBottom())) {
-			// console.log('top')
-			this.links[3] = true;
-			// this.checkType();
-			// knot.links[0] = true;
-			// knot.checkType();
-			// return true;
+		var sides = [];
+		sides.push(knot.getRight());
+		sides.push(knot.getTop());
+		sides.push(knot.getLeft());
+		sides.push(knot.getBottom());
+		for(var side of sides) {
+			if (sidesAreEqual(this.getLeft(), side)) {
+				this.links[0] = true;
+			} else
+			if (sidesAreEqual(this.getBottom(), side)) {
+				this.links[1] = true;
+			} else
+			if (sidesAreEqual(this.getRight(), side)) {
+				this.links[2] = true;
+			} else
+			if (sidesAreEqual(this.getTop(), side)) {
+				this.links[3] = true;
+			}
 		}
-		// return false;
 	}
 
 	getTop() {
