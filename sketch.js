@@ -10,9 +10,11 @@ var ptsI = [];
 var ptsO = [];
 var knotCells = [];
 var margin = 20;
-var numC = 20;
-var numR = 10;
+var numC = 5;
+var numR = 5;
 var currPatern = 0;
+var lines = [];
+var breakLines = [];
 
 function generateMatrixPattern(numRows, numCols) {
   var gridW = (width - 2 * margin) / (numCols);
@@ -59,6 +61,7 @@ function generateRingPatern(numSectors, numRings) {
 }
 
 function generateKnotCells() {
+  breakLines.length = 0;
   switch (currPatern) {
     case 0:
       generateMatrixPattern(numC, numR);
@@ -68,10 +71,10 @@ function generateKnotCells() {
       break;
 
   }
-  // knotCells.pop();
 }
 
 function checkKnotLinks() {
+  deriveLinesFromPts();
   for(var k of knotCells) {
     k.resetLinks();
   }
@@ -83,9 +86,31 @@ function checkKnotLinks() {
     }
   }
   for(var k of knotCells) {
+    for(var b of breakLines) {
+      k.checkBreakLine(b);
+    }
     k.checkType();
   }
-  // noLoop();
+}
+
+function deriveLinesFromPts() {
+  lines.length = 0;
+  for(var i = 1; i < pts.length; i++) {
+    if((i)%4 == 0) {
+      continue;
+    }
+    lines.push([pts[i-1], pts[i]]);
+  }
+}
+
+function ptOverLine(l, pt) {
+  var d1 = pt.dist(l[0]);
+  var d2 = pt.dist(l[1]);
+  var dl = l[0].dist(l[1]);
+  if((d1+d2) < (dl+10)) {
+    return true;
+  }
+  return false;
 }
 
 function setup() {
@@ -128,6 +153,17 @@ function draw() {
       circle(pt.x, pt.y, 10);
     }
   }
+
+  for(var b of breakLines) {
+    line(b[0].x, b[0].y, b[1].x, b[1].y);
+  }
+
+  for(var l of lines) {
+    if(ptOverLine(l, m)) {
+      line(l[0].x, l[0].y, l[1].x, l[1].y);
+    }
+  }
+
   textSize(20);
   fill(0);
   text(pts.length, m.x, m.y);
@@ -212,6 +248,22 @@ function keyPressed(e) {
     knotCells.length = 0;
     generateKnotCells();
     checkKnotLinks();
+  } else if(e.key == 'b') {
+    var m = createVector(mouseX, mouseY);
+    for(var i = 0; i < breakLines.length; i++) {
+      if(ptOverLine(breakLines[i], m)) {
+        breakLines.splice(i,1);
+        checkKnotLinks();
+        return;
+      }
+    }
+    for(var l of lines) {
+      if(ptOverLine(l, m)) {
+        breakLines.push(l);
+        checkKnotLinks();
+        return;
+      }
+    }
   }
 }
 

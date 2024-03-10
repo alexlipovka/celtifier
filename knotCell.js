@@ -377,6 +377,21 @@ class KnotCell {
 		}
 	}
 
+	checkBreakLine(breakLine) {
+		if (sidesAreEqual(this.getLeft(), breakLine)) {
+			this.links[0] = false;
+		} else
+		if (sidesAreEqual(this.getBottom(), breakLine)) {
+			this.links[1] = false;
+		} else
+		if (sidesAreEqual(this.getRight(), breakLine)) {
+			this.links[2] = false;
+		} else
+		if (sidesAreEqual(this.getTop(), breakLine)) {
+			this.links[3] = false;
+		}
+	}
+
 	getTop() {
 		return [this.kPts[3], this.kPts[0]];
 	}
