@@ -9,12 +9,13 @@ var knotSpacing = 0.2;
 var ptsI = [];
 var ptsO = [];
 var knotCells = [];
-var margin = 20;
+var margin = 40;
 var numC = 5;
 var numR = 5;
 var currPatern = 0;
 var lines = [];
 var breakLines = [];
+var displayHelp = false;
 
 function generateMatrixPattern(numRows, numCols) {
   var gridW = (width - 2 * margin) / (numCols);
@@ -112,6 +113,44 @@ function ptOverLine(l, pt) {
   }
   return false;
 }
+function drawHelp() {
+  textAlign(LEFT);
+  textSize(14);
+  noStroke();
+  fill(0);
+
+  var tx = 10;
+  if(!displayHelp) {
+    text("H - help", tx, height - 20);
+  } else {
+
+
+
+    var infoStr = [
+      'SPACE',
+      'd|a cols',
+      'c|z rows',
+      'w|s width',
+      'q|e reset',
+      'p pattern',
+      'b breakline',
+      'h help'
+    ];
+    var tw = 0;
+    var ti = [];
+    for(var s of infoStr) {
+      var t = textWidth(s);
+      ti.push(t);
+      tw += t;
+    }
+    var ts = (width - tw - 2 * tx) / (infoStr.length - 1);
+    for(var si = 0; si < infoStr.length; si++) {
+      text(infoStr[si], tx, height - 20);
+      tx += ti[si] + ts;
+    }
+
+}
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -164,10 +203,14 @@ function draw() {
     }
   }
 
+  drawHelp();
+
   textSize(20);
   fill(0);
   text(pts.length, m.x, m.y);
 }
+
+
 
 function drawCelticKnot(kType, kPts, kSpacing) {
 
@@ -232,10 +275,6 @@ function keyPressed(e) {
       knotSpacing = 0;
     }
     checkKnotLinks();
-  } else if(e.key =='r') {
-    mouseOverKnot()?.shiftOrder();
-    checkKnotLinks();
-
   } else if(e.key =='q') {
     for(var k of knotCells) {
       k.resetLinks();
@@ -264,6 +303,8 @@ function keyPressed(e) {
         return;
       }
     }
+  } else if(e.key =='h') {
+    displayHelp = !displayHelp;
   }
 }
 
