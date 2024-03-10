@@ -166,7 +166,7 @@ function draw() {
   var m = createVector(mouseX, mouseY)
   
   
-  mouseOverKnot()?.drawCellFilled(210);
+  // mouseOverKnot()?.drawCellFilled(210);
   
   for (k of knotCells) {
     k.draw();
@@ -205,9 +205,9 @@ function draw() {
 
   drawHelp();
 
-  textSize(20);
-  fill(0);
-  text(pts.length, m.x, m.y);
+  // textSize(20);
+  // fill(0);
+  // text(pts.length, m.x, m.y);
 }
 
 
@@ -305,6 +305,8 @@ function keyPressed(e) {
     }
   } else if(e.key =='h') {
     displayHelp = !displayHelp;
+  } else if(e.key == 'i') {
+    saveCanvas(`celtifier.png`);
   }
 }
 
