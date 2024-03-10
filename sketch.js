@@ -134,7 +134,7 @@ function drawHelp() {
       'q|e reset',
       'p pattern',
       'b breakline',
-      'h help'
+      'i save'
     ];
     var tw = 0;
     var ti = [];
