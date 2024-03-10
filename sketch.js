@@ -12,6 +12,7 @@ var knotCells = [];
 var margin = 20;
 var numC = 20;
 var numR = 10;
+var currPatern = 0;
 
 function generateMatrixPattern(numRows, numCols) {
   var gridW = (width - 2 * margin) / (numCols);
@@ -52,26 +53,21 @@ function generateRingPatern(numSectors, numRings) {
         knotCells.push(new KnotCell(pts.slice(-4)));
       // }
     }
-  }
-  var stPts = pts.slice(0, numRings*4);
-  var endPts = pts.slice(-numRings*4);
-  console.log(createVector(endPts[0].x, endPts[0].y));
-  // console.log(endPts);
-  // for(var i = 0; i <= numRings; i++) {
-    // pts.push(createVector(stPts[0].x, stPts[0].y));
-    // pts.push(createVector(stPts[1].x, stPts[1].y));
-    // pts.push(createVector(endPts[0].x, endPts[0].y));
-    // pts.push(createVector(endPts[1].x, endPts[1].y));
+ }
 
-    // knotCells.push(new KnotCell(pts.slice(-4)));
-
-  // }
 
 }
 
 function generateKnotCells() {
-  // generateMatrixPattern(numC, numR);
-  generateRingPatern(numC, numR);
+  switch (currPatern) {
+    case 0:
+      generateMatrixPattern(numC, numR);
+      break;
+    case 1:
+      generateRingPatern(numC, numR);
+      break;
+
+  }
   // knotCells.pop();
 }
 
@@ -168,26 +164,34 @@ function keyPressed(e) {
     pts.length = 0;
     knotCells.length = 0;
   } else if(e.key == 'd') {
-    num++;
+    numC++;
     pts.length = 0;
     knotCells.length = 0;
     generateKnotCells();
     checkKnotLinks();
   } else if(e.key == 'a') {
-    num--;
+    numC--;
+    pts.length = 0;
+    knotCells.length = 0;
+    generateKnotCells();
+    checkKnotLinks();
+  } else if(e.key == 'c') {
+    numR++;
+    pts.length = 0;
+    knotCells.length = 0;
+    generateKnotCells();
+    checkKnotLinks();
+  } else if(e.key == 'z') {
+    numR--;
     pts.length = 0;
     knotCells.length = 0;
     generateKnotCells();
     checkKnotLinks();
   } else if(e.key == 'w') {
     knotSpacing += 0.05;
-    // knotCells.length = 0;
-    // generateKnotCells();
     checkKnotLinks();
   } else if(e.key == 's') {
     knotSpacing -= 0.05;
-    // knotCells.length = 0;
-    // generateKnotCells();
     if(knotSpacing <= 0) {
       knotSpacing = 0;
     }
@@ -200,8 +204,13 @@ function keyPressed(e) {
     for(var k of knotCells) {
       k.resetLinks();
     }
-    // checkKnotLinks();
   } else if(e.key =='e') {
+    checkKnotLinks();
+  } else if(e.key =='p') {
+    currPatern = ++currPatern % 2;
+    pts.length = 0;
+    knotCells.length = 0;
+    generateKnotCells();
     checkKnotLinks();
   }
 }
@@ -215,8 +224,6 @@ function mouseOverKnot() {
 
   for(var k of knotCells) {
     if(k.ptInKnotCell(m)) {
-      // k.drawCellFilled(150);
-      // noLoop();
       return k;
     }
   }
