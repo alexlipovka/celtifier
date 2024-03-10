@@ -1,13 +1,17 @@
-
+// TODO:
+// - add variants to knots (round corner, sharp pike, etc.)
+// - add knot editor
+// - add break lines
+// - turn straight lines into curves
 
 var pts = [];
-var knotSpacing = 20;
+var knotSpacing = 0.2;
 var ptsI = [];
 var ptsO = [];
 var knotCells = [];
 var margin = 20;
-var numC = 4;
-var numR = 4;
+var numC = 20;
+var numR = 10;
 
 function generateMatrixPattern(numRows, numCols) {
   var gridW = (width - 2 * margin) / (numCols);
@@ -31,14 +35,18 @@ function generateRingPatern(numSectors, numRings) {
   
   for(var i = 1; i <= numRings; i++) {
     for(var j = 1; j <= numSectors; j++) {
-      pts.push(createVector(Math.round(Math.cos((j - 1) * da) * ((i-1) * ringStep + margin) + width/2), 
-        Math.round(Math.sin((j - 1) * da) * ((i-1) * ringStep + margin) + height/2)));
-      pts.push(createVector(Math.round(Math.cos((j - 1) * da) * ((i) * ringStep + margin) + width/2), 
-        Math.round(Math.sin((j - 1) * da) * ((i) * ringStep + margin) + height/2)));
-      pts.push(createVector(Math.round(Math.cos((j) * da) * ((i) * ringStep + margin) + width/2), 
-        Math.round(Math.sin((j) * da) * ((i) * ringStep + margin) + height/2)));
-      pts.push(createVector(Math.round(Math.cos((j) * da) * ((i-1) * ringStep  + margin) + width/2), 
-        Math.round(Math.sin((j) * da) * ((i-1) * ringStep + margin) + height/2)));
+      var angL = (j - 1) * da;
+      var angR = (j) * da;
+      angL += Math.PI/2 + da/2;
+      angR += Math.PI/2 + da/2;
+      pts.push(createVector(Math.round(Math.cos(angL) * ((i-1) * ringStep + margin) + width/2), 
+        Math.round(Math.sin(angL) * ((i-1) * ringStep + margin) + height/2)));
+      pts.push(createVector(Math.round(Math.cos(angL) * ((i) * ringStep + margin) + width/2), 
+        Math.round(Math.sin(angL) * ((i) * ringStep + margin) + height/2)));
+      pts.push(createVector(Math.round(Math.cos(angR) * ((i) * ringStep + margin) + width/2), 
+        Math.round(Math.sin(angR) * ((i) * ringStep + margin) + height/2)));
+      pts.push(createVector(Math.round(Math.cos(angR) * ((i-1) * ringStep  + margin) + width/2), 
+        Math.round(Math.sin(angR) * ((i-1) * ringStep + margin) + height/2)));
       // console.log(pts);
       // if (pts.length % 4 == 0) {
         knotCells.push(new KnotCell(pts.slice(-4)));
@@ -62,8 +70,8 @@ function generateRingPatern(numSectors, numRings) {
 }
 
 function generateKnotCells() {
-  generateMatrixPattern(numC, numR);
-  // generateRingPatern(numC, numR);
+  // generateMatrixPattern(numC, numR);
+  generateRingPatern(numC, numR);
   // knotCells.pop();
 }
 
@@ -85,8 +93,8 @@ function checkKnotLinks() {
 }
 
 function setup() {
-  // createCanvas(windowWidth, windowHeight);
-  createCanvas(800, 800);
+  createCanvas(windowWidth, windowHeight);
+  // createCanvas(800, 800);
   generateKnotCells();
   checkKnotLinks();
 }
@@ -172,12 +180,12 @@ function keyPressed(e) {
     generateKnotCells();
     checkKnotLinks();
   } else if(e.key == 'w') {
-    knotSpacing += 5;
+    knotSpacing += 0.05;
     // knotCells.length = 0;
     // generateKnotCells();
     checkKnotLinks();
   } else if(e.key == 's') {
-    knotSpacing -= 5;
+    knotSpacing -= 0.05;
     // knotCells.length = 0;
     // generateKnotCells();
     if(knotSpacing <= 0) {
@@ -213,4 +221,8 @@ function mouseOverKnot() {
     }
   }
   return undefined;
+}
+
+function windowResized() {
+	resizeCanvas(windowWidth, windowHeight);
 }

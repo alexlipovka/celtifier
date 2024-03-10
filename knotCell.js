@@ -100,7 +100,7 @@ class KnotCell {
 		this.pto.length = 0;
 		this.ptb.length = 0;
 		this.pti.length = 0;
-		var t = 0.3;
+		var t = knotSpacing;
 		for (var i = 0; i < 4; i++) {
 			sides.push([this.kPts[i], this.kPts[(i + 1) % 4]]);
 		}
