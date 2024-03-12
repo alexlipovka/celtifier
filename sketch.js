@@ -242,6 +242,8 @@ function keyPressed(e) {
   if (e.key == ' ') {
     pts.length = 0;
     knotCells.length = 0;
+    lines.length = 0;
+    breakLines.length = 0;
   } else if(e.key == 'd') {
     numC++;
     pts.length = 0;
