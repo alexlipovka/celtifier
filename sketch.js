@@ -10,12 +10,15 @@ var ptsI = [];
 var ptsO = [];
 var knotCells = [];
 var margin = 40;
-var numC = 5;
+var numC = 8;
 var numR = 4;
-var currPatern = 2;
+var currPatern = 0;
 var lines = [];
 var breakLines = [];
 var displayHelp = false;
+var gridSize = 30;
+var snapToGrid = false;
+var snap = true;
 
 function generateMatrixPattern(numRows, numCols) {
   var gridW = (width - 2 * margin) / (numCols);
@@ -81,13 +84,13 @@ function generateKnotCells() {
   breakLines.length = 0;
   switch (currPatern) {
     case 0:
-      generateMatrixPattern(numC, numR);
+      generateMatrixPattern(numR, numC);
       break;
     case 1:
-      generateRingPattern(numC, numR);
+      generateRingPattern(numR, numC);
       break;
     case 2:
-      generatePerspPattern(numC, numR);
+      generatePerspPattern(numR, numC);
       break;
 
   }
@@ -153,6 +156,8 @@ function drawHelp() {
       'q|e reset',
       'p pattern',
       'b breakline',
+      'g|k|l grid',
+      'v snap',
       'i save'
     ];
     var tw = 0;
@@ -171,6 +176,16 @@ function drawHelp() {
 }
 }
 
+function drawGrid() {
+  stroke(150);
+  strokeWeight(1);
+  for(var x = 0; x < width; x += gridSize) {
+    for(var y = 0; y < height; y += gridSize) {
+      point(x, y);
+    }
+  }
+}
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   // createCanvas(800, 800);
@@ -181,10 +196,11 @@ function setup() {
 function draw() {
   background(220);
 
-  
+  if(snapToGrid) {
+    drawGrid();
+  }
+
   var m = createVector(mouseX, mouseY)
-  
-  
   // mouseOverKnot()?.drawCellFilled(210);
   
   for (k of knotCells) {
@@ -199,16 +215,18 @@ function draw() {
     text(i, pts[i].x, pts[i].y);
   }
 
-  noFill();
-  stroke(120);
-  strokeWeight(1);
-  var m = createVector(mouseX, mouseY);
-  var snapDist = 30*30;
-  circle(m.x, m.y, 30);
-  stroke(255, 0, 0);
-  for (pt of pts) {
-    if (m.copy().sub(pt).magSq() <= snapDist) {
-      circle(pt.x, pt.y, 10);
+  if(snap) {
+    noFill();
+    stroke(120);
+    strokeWeight(1);
+    // var m = createVector(mouseX, mouseY);
+    var snapDist = 30;
+    // circle(m.x, m.y, 30);
+    stroke(255, 0, 0);
+    for (pt of pts) {
+      if (m.copy().sub(pt).mag() <= snapDist) {
+        circle(pt.x, pt.y, 10);
+      }
     }
   }
 
@@ -224,6 +242,15 @@ function draw() {
 
   drawHelp();
 
+  stroke(255, 0, 0);
+  strokeWeight(4);
+  if(snapToGrid) {
+    point(Math.round(mouseX/gridSize)*gridSize, 
+      Math.round(mouseY/gridSize)*gridSize);
+  } else {
+    point(mouseX, mouseY);
+  }
+
   // textSize(20);
   // fill(0);
   // text(pts.length, m.x, m.y);
@@ -236,16 +263,22 @@ function drawCelticKnot(kType, kPts, kSpacing) {
 }
 
 function mouseClicked() {
-  var m = createVector(mouseX, mouseY)
-  var snapDist = 30*30;
-  for (pt of pts) {
-    if (m.copy().sub(pt).magSq() <= snapDist) {
-      pts.push(pt.copy());
-      if (pts.length % 4 == 0) {
-        knotCells.push(new KnotCell(pts.slice(-4)));
-        checkKnotLinks();
+  if(snapToGrid) {
+    var m = createVector(Math.floor(mouseX/10)*10, mouseY)
+  } else {
+    var m = createVector(mouseX, mouseY)
+  }
+  if(snap) {
+    var snapDist = 30;
+    for (pt of pts) {
+      if (m.copy().sub(pt).mag() <= snapDist) {
+        pts.push(pt.copy());
+        if (pts.length % 4 == 0) {
+          knotCells.push(new KnotCell(pts.slice(-4)));
+          checkKnotLinks();
+        }
+        return;
       }
-      return;
     }
   }
   pts.push(m);
@@ -328,6 +361,17 @@ function keyPressed(e) {
     displayHelp = !displayHelp;
   } else if(e.key == 'i') {
     saveCanvas(`celtifier.png`);
+  } else if(e.key == 'g') {
+    snapToGrid = !snapToGrid;
+  } else if(e.key == 'l') {
+    gridSize += 10;
+  } else if(e.key =='k') {
+    gridSize -= 10;
+    if(gridSize <= 10) {
+      gridSize = 10;
+    }
+  } else if(e.key == 'v') {
+    snap = !snap;
   }
 }
 
