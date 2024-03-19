@@ -340,7 +340,7 @@ function keyPressed(e) {
   } else if(e.key =='e') {
     checkKnotLinks();
   } else if(e.key =='p') {
-    currPatern = ++currPatern % 2;
+    currPatern = ++currPatern % 3;
     pts.length = 0;
     knotCells.length = 0;
     generateKnotCells();
