@@ -230,6 +230,10 @@ function draw() {
     }
   }
 
+  noFill();
+  strokeWeight(1);
+  stroke(255, 0, 0);
+
   for(var b of breakLines) {
     line(b[0].x, b[0].y, b[1].x, b[1].y);
   }
