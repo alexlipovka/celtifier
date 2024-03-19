@@ -264,7 +264,7 @@ function drawCelticKnot(kType, kPts, kSpacing) {
 
 function mouseClicked() {
   if(snapToGrid) {
-    var m = createVector(Math.floor(mouseX/10)*10, mouseY)
+    var m = createVector(Math.round(mouseX/gridSize)*gridSize, Math.round(mouseY/gridSize)*gridSize)
   } else {
     var m = createVector(mouseX, mouseY)
   }
