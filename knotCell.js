@@ -26,9 +26,11 @@ class KnotCell {
 		this.pti = [];
 		this.pto = [];
 		this.ptb = [];
+		this.mid = [];
 		this.cen;
 		this.calcPts();
 		this.links = [false, false, false, false]; //left, bottom, right, top
+		this.nbrKnots = [];
 	}
 
 	checkType() {
@@ -74,6 +76,9 @@ class KnotCell {
 		for(var l of this.links) {
 			l = false;
 		}
+		for(var n of this.nbrKnots) {
+			n = undefined;
+		}
 		this.kType = knotTypes.island;
 	}
 
@@ -100,13 +105,16 @@ class KnotCell {
 		this.pto.length = 0;
 		this.ptb.length = 0;
 		this.pti.length = 0;
+		this.mid.length = 0;
 		var t = knotSpacing;
 		for (var i = 0; i < 4; i++) {
 			sides.push([this.kPts[i], this.kPts[(i + 1) % 4]]);
 		}
 		for (var i = 0; i < 4; i++) {
-			this.pto.push(p5.Vector.lerp(sides[i][0], sides[i][1], t));
-			this.ptb.push(p5.Vector.lerp(sides[(i + 3) % 4][0], sides[(i + 3) % 4][1], (1-t)));
+			// this.pto.push(p5.Vector.lerp(sides[i][0], sides[i][1], t));
+			this.pto.push(p5.Vector.sub(sides[i][1], sides[i][0]).setMag(20).add(sides[i][0]));
+			// this.ptb.push(p5.Vector.lerp(sides[(i + 3) % 4][0], sides[(i + 3) % 4][1], (1-t)));
+			this.ptb.push(p5.Vector.sub(sides[(i + 3) % 4][0], sides[(i + 3) % 4][1]).setMag(20).add(sides[(i + 3) % 4][1]));
 		}
 		for(var i = 0; i < 4; i++) {
 			this.pti.push(getIntersection([this.pto[(i+0)%4], this.ptb[(i + 2)%4]], [this.pto[(i+3)%4], this.ptb[(i + 1)%4]]));
@@ -115,6 +123,9 @@ class KnotCell {
 		if(!this.ptInKnotCell(this.cen)) {
 			this.shiftOrder();
 		}
+		for(var i = 0; i < 4; i++) {
+			this.mid.push(getMiddle(this.pti[(i) % 4], this.pti[(i+1) % 4]));
+		}		
 	}
 
 	drawCell() {
@@ -175,7 +186,7 @@ class KnotCell {
 
 	drawEdge(iOff) {
 		stroke(0);
-		strokeWeight(4);
+		strokeWeight(2);
 		for (var i = 0; i < 2; i++) {
 			line(this.pti[(i+1+iOff)%4].x, this.pti[(i+1+iOff)%4].y, this.pto[(i+0+iOff)%4].x, this.pto[(i+0+iOff)%4].y);
 		}
@@ -196,20 +207,20 @@ class KnotCell {
 	drawIsland() {
 		// this.calcPts();
 		stroke(20);
-		strokeWeight(4);
+		strokeWeight(2);
 		noFill();
 		// var cen = getIntersection([this.kPts[0], this.kPts[2]], [this.kPts[1], this.kPts[3]]);
-		var mid = [];
-		for(var i = 0; i < 4; i++) {
-			mid.push(getMiddle(this.pti[i], this.pti[(i+1)%4]));
-		}
+		// var mid = [];
+		// for(var i = 0; i < 4; i++) {
+		// 	mid.push(getMiddle(this.pti[i], this.pti[(i+1)%4]));
+		// }
 		// circle(cen.x, cen.y, knotSpacing);
 		for(var iOff = 0; iOff < 4; iOff++) {
 			this.drawBezier(getMiddle(this.kPts[(3+iOff)%4], this.kPts[(0+iOff)%4]), this.kPts[(0+iOff)%4], 
 				this.kPts[(0+iOff)%4], getMiddle(this.kPts[(0+iOff)%4], this.kPts[(1+iOff)%4]), 
 				calcLen([this.kPts[(3+iOff)%4], this.kPts[(0+iOff)%4]])*0.3, calcLen([this.kPts[(1+iOff)%4], this.kPts[(0+iOff)%4]])*0.3);
-			this.drawBezier(mid[iOff], this.pti[(iOff + 1) % 4],
-				this.pti[(iOff + 1) % 4], mid[(iOff+1)%4],
+			this.drawBezier(this.mid[iOff], this.pti[(iOff + 1) % 4],
+				this.pti[(iOff + 1) % 4], this.mid[(iOff+1)%4],
 				calcLen([this.pti[(iOff) % 4], this.pti[(1 + iOff) % 4]])*0.25,
 				calcLen([this.pti[(1 + iOff) % 4], this.pti[(2 + iOff) % 4]])*0.25);
 		}
@@ -223,64 +234,56 @@ class KnotCell {
 
 	drawPike(iOff) {
 		stroke(20);
-		strokeWeight(4);
+		strokeWeight(2);
 
 		this.drawBezier(getMiddle(this.kPts[(3+iOff)%4], this.kPts[(0+iOff)%4]), this.kPts[(0+iOff)%4], 
 			this.ptb[(1 + iOff) % 4], this.pto[(1 + iOff) % 4], calcLen([this.kPts[(3+iOff)%4], this.kPts[(0+iOff)%4]])*0.5);
 		this.drawBezier(getMiddle(this.kPts[(3+iOff)%4], this.kPts[(0+iOff)%4]), this.kPts[(3+iOff)%4], 
 			this.pto	[(2 + iOff) % 4], this.ptb[(2 + iOff) % 4], calcLen([this.kPts[(3+iOff)%4], this.kPts[(0+iOff)%4]])*0.5);
-		var mid0 = getMiddle(this.pti[(0 + iOff) % 4], this.pti[(1 + iOff) % 4]);
-		var mid1 = getMiddle(this.pti[(1 + iOff) % 4], this.pti[(2 + iOff) % 4]);
-		var mid2 = getMiddle(this.pti[(2 + iOff) % 4], this.pti[(3 + iOff) % 4]);
-		var mid3 = getMiddle(this.pti[(3 + iOff) % 4], this.pti[(0 + iOff) % 4]);
 		line(this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y, this.pto[(1 + iOff) % 4].x, this.pto[(1 + iOff) % 4].y);
-		line(mid1.x, mid1.y, this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y);
-		line(mid0.x, mid0.y, this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y);
-		this.drawBezier(mid1, this.pti[(2 + iOff) % 4],
-			this.pti[(2 + iOff) % 4], mid2,
+		line(this.mid[(1+iOff)%4].x, this.mid[(1+iOff)%4].y, this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y);
+		line(this.mid[(0+iOff)%4].x, this.mid[(0+iOff)%4].y, this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y);
+		this.drawBezier(this.mid[(1+iOff)%4], this.pti[(2 + iOff) % 4],
+			this.pti[(2 + iOff) % 4], this.mid[(2+iOff)%4],
 			calcLen([this.pti[(1 + iOff) % 4], this.pti[(2 + iOff) % 4]])*0.25,
 			calcLen([this.pti[(2 + iOff) % 4], this.pti[(3 + iOff) % 4]])*0.25);
-		this.drawBezier(mid2, this.pti[(3 + iOff) % 4],
-			this.pti[(3 + iOff) % 4], mid3,
+		this.drawBezier(this.mid[(2+iOff)%4], this.pti[(3 + iOff) % 4],
+			this.pti[(3 + iOff) % 4], this.mid[(3+iOff)%4],
 			calcLen([this.pti[(2 + iOff) % 4], this.pti[(3 + iOff) % 4]])*0.25,
 			calcLen([this.pti[(3 + iOff) % 4], this.pti[(0 + iOff) % 4]])*0.25);
-		this.drawBezier(mid3, this.pti[(0 + iOff) % 4],
-			this.pti[(0 + iOff) % 4], mid0,
+		this.drawBezier(this.mid[(3+iOff)%4], this.pti[(0 + iOff) % 4],
+			this.pti[(0 + iOff) % 4], this.mid[(0+iOff)%4],
 			calcLen([this.pti[(3 + iOff) % 4], this.pti[(0 + iOff) % 4]])*0.25,
 			calcLen([this.pti[(0 + iOff) % 4], this.pti[(1 + iOff) % 4]])*0.25);
 	}
 
 	drawColRow(iOff) {
 		stroke(20);
-		strokeWeight(4);
+		strokeWeight(2);
 
 		this.drawBezier(this.ptb[(0 + iOff) % 4], this.pto[(0 + iOff) % 4], this.ptb[(1 + iOff) % 4], this.pto[(1 + iOff) % 4],
 		calcLen([this.kPts[(1+iOff)%4], this.kPts[(0+iOff)%4]])*0.3);
 		this.drawBezier(this.ptb[(2 + iOff) % 4], this.pto[(2 + iOff) % 4], this.ptb[(3 + iOff) % 4], this.pto[(3 + iOff) % 4],
 		calcLen([this.kPts[(3+iOff)%4], this.kPts[(2+iOff)%4]])*0.3);
-		var mid0 = getMiddle(this.pti[(0 + iOff) % 4], this.pti[(1 + iOff) % 4]);
-		var mid1 = getMiddle(this.pti[(1 + iOff) % 4], this.pti[(2 + iOff) % 4]);
-		var mid2 = getMiddle(this.pti[(2 + iOff) % 4], this.pti[(3 + iOff) % 4]);
-		var mid3 = getMiddle(this.pti[(3 + iOff) % 4], this.pti[(0 + iOff) % 4]);
 		line(this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y, this.pto[(1 + iOff) % 4].x, this.pto[(1 + iOff) % 4].y);
-		line(mid1.x, mid1.y, this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y);
+		line(this.mid[(1+iOff)%4].x, this.mid[(1+iOff)%4].y, this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y);
 		line(this.pti[(3 + iOff) % 4].x, this.pti[(3 + iOff) % 4].y, this.pto[(3 + iOff) % 4].x, this.pto[(3 + iOff) % 4].y);
-		line(mid3.x, mid3.y, this.pti[(3 + iOff) % 4].x, this.pti[(3 + iOff) % 4].y);
-		line(mid0.x, mid0.y, this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y);
-		line(mid2.x, mid2.y, this.pti[(3 + iOff) % 4].x, this.pti[(3 + iOff) % 4].y);
-		this.drawBezier(mid1, this.pti[(2 + iOff) % 4],
-			this.pti[(2 + iOff) % 4], mid2,
+		line(this.mid[(3+iOff)%4].x, this.mid[(3+iOff)%4].y, this.pti[(3 + iOff) % 4].x, this.pti[(3 + iOff) % 4].y);
+		line(this.mid[(0+iOff)%4].x, this.mid[(0+iOff)%4].y, this.pti[(1 + iOff) % 4].x, this.pti[(1 + iOff) % 4].y);
+		line(this.mid[(2+iOff)%4].x, this.mid[(2+iOff)%4].y, this.pti[(3 + iOff) % 4].x, this.pti[(3 + iOff) % 4].y);
+		this.drawBezier(this.mid[(1+iOff)%4], this.pti[(2 + iOff) % 4],
+			this.pti[(2 + iOff) % 4], this.mid[(2+iOff)%4],
 			calcLen([this.pti[(2 + iOff) % 4], this.pti[(1 + iOff) % 4]])*0.25,
 			calcLen([this.pti[(2 + iOff) % 4], this.pti[(3 + iOff) % 4]])*0.25);
-		this.drawBezier(mid3, this.pti[(0 + iOff) % 4],
-			this.pti[(0 + iOff) % 4], mid0,
+		this.drawBezier(this.mid[(3+iOff)%4], this.pti[(0 + iOff) % 4],
+			this.pti[(0 + iOff) % 4], this.mid[(0+iOff)%4],
 			calcLen([this.pti[(0 + iOff) % 4], this.pti[(3 + iOff) % 4]])*0.25,
 			calcLen([this.pti[(0 + iOff) % 4], this.pti[(1 + iOff) % 4]])*0.25);
 	}
 
 	drawCorner(iOff) {
 		stroke(0);
-		strokeWeight(4);
+		strokeWeight(2);
 
 		this.drawBezier(this.kPts[(0 + iOff) % 4], this.pto[(0 + iOff) % 4], 
 			this.ptb[(1 + iOff) % 4], this.pto[(1 + iOff) % 4],
@@ -306,17 +309,62 @@ class KnotCell {
 
 	drawRegular() {
 			stroke(0);
-			strokeWeight(4);
+			strokeWeight(2);
 			for (var i = 0; i < 4; i++) {
-				line(this.pti[(i+1)%4].x, this.pti[(i+1)%4].y, this.pto[i].x, this.pto[i].y);
-				line(this.ptb[i].x, this.ptb[i].y, this.pto[i].x, this.pto[i].y);
+				// line(this.pti[(i+1)%4].x, this.pti[(i+1)%4].y, this.pto[i].x, this.pto[i].y);
+				// line(this.ptb[i].x, this.ptb[i].y, this.pto[i].x, this.pto[i].y);
+			}
+			for (var i = 0; i < 4; i++) {
+				stroke(0);
+				beginShape();
+				curveVertex(this.nbrKnots[(3+i)%4].pto[(2+i)%4].x, this.nbrKnots[(3+i)%4].pto[(2+i)%4].y);
+				curveVertex(this.pto[(3+i)%4].x, this.pto[(3+i)%4].y);
+				curveVertex(this.pti[(0+i)%4].x, this.pti[(0+i)%4].y);
+				curveVertex(this.ptb[(1+i)%4].x, this.ptb[(1+i)%4].y);
+				endShape();
+
+				beginShape();
+				curveVertex(this.nbrKnots[(3+i)%4].pti[(1+i)%4].x, this.nbrKnots[(3+i)%4].pti[(1+i)%4].y);
+				curveVertex(this.ptb[(0+i)%4].x, this.ptb[(0+i)%4].y);
+				curveVertex(this.pto[(0+i)%4].x, this.pto[(0+i)%4].y);
+				curveVertex(this.nbrKnots[(0+i)%4].pti[(2+i)%4].x, this.nbrKnots[(0+i)%4].pti[(2+i)%4].y);
+				endShape();
+
+				stroke(0, 80, 180);
+				var m0 = getMiddle(this.nbrKnots[(3+i)%4].kPts[(2+i)%4], 
+					this.nbrKnots[(3+i)%4].kPts[(3+i)%4]);
+					var m1 = getMiddle(this.kPts[(3+i)%4], this.kPts[(0+i)%4]);
+					var m2 = getMiddle(this.kPts[(0+i)%4], this.kPts[(1+i)%4]);
+				var m3 = getMiddle(this.nbrKnots[(0+i)%4].kPts[(1+i)%4], 
+					this.nbrKnots[(0+i)%4].kPts[(2+i)%4]);
+				beginShape();
+				curveVertex(m0.x, m0.y);
+				curveVertex(m0.x, m0.y);
+				curveVertex(m1.x, m1.y);
+				curveVertex(m2.x, m2.y);
+				curveVertex(m3.x, m3.y);
+				curveVertex(m3.x, m3.y);
+				endShape();
+
+				m0 = this.nbrKnots[(3+i)%4].ptb[(3+i)%4];
+				m1 = this.ptb[(0+i)%4];
+				m2 = this.pto[(0+i)%4];
+				m3 = this.nbrKnots[(0+i)%4].pto[(1+i)%4];
+				beginShape();
+				curveVertex(m0.x, m0.y);
+				curveVertex(m0.x, m0.y);
+				curveVertex(m1.x, m1.y);
+				curveVertex(m2.x, m2.y);
+				curveVertex(m3.x, m3.y);
+				curveVertex(m3.x, m3.y);
+				endShape();
 			}
 	}
 
 	draw() {
-		// this.drawCell();
+		this.drawCell();
 		// this.drawConstruction();
-		// this.drawPtsIndex();
+		this.drawPtsIndex();
 		noFill();
 
 		var cen = getIntersection([this.kPts[0], this.kPts[2]], [this.kPts[1], this.kPts[3]]);
@@ -364,15 +412,19 @@ class KnotCell {
 		for(var side of sides) {
 			if (sidesAreEqual(this.getLeft(), side)) {
 				this.links[0] = true;
+				this.nbrKnots[0] = knot;
 			} else
 			if (sidesAreEqual(this.getBottom(), side)) {
 				this.links[1] = true;
+				this.nbrKnots[1] = knot;
 			} else
 			if (sidesAreEqual(this.getRight(), side)) {
 				this.links[2] = true;
+				this.nbrKnots[2] = knot;
 			} else
 			if (sidesAreEqual(this.getTop(), side)) {
 				this.links[3] = true;
+				this.nbrKnots[3] = knot;
 			}
 		}
 	}
@@ -380,15 +432,19 @@ class KnotCell {
 	checkBreakLine(breakLine) {
 		if (sidesAreEqual(this.getLeft(), breakLine)) {
 			this.links[0] = false;
+			this.nbrKnots[0] = undefined;
 		} else
 		if (sidesAreEqual(this.getBottom(), breakLine)) {
 			this.links[1] = false;
+			this.nbrKnots[1] = undefined;
 		} else
 		if (sidesAreEqual(this.getRight(), breakLine)) {
 			this.links[2] = false;
+			this.nbrKnots[2] = undefined;
 		} else
 		if (sidesAreEqual(this.getTop(), breakLine)) {
 			this.links[3] = false;
+			this.nbrKnots[3] = undefined;
 		}
 	}
 
