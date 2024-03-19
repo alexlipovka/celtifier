@@ -11,8 +11,8 @@ var ptsO = [];
 var knotCells = [];
 var margin = 40;
 var numC = 5;
-var numR = 5;
-var currPatern = 0;
+var numR = 4;
+var currPatern = 2;
 var lines = [];
 var breakLines = [];
 var displayHelp = false;
@@ -33,7 +33,23 @@ function generateMatrixPattern(numRows, numCols) {
   }
 }
 
-function generateRingPatern(numSectors, numRings) {
+function generatePerspPattern(numRows, numCols) {
+  var gridW = (width - 2 * margin) / (numCols);
+  var gridH = (height - 2* margin)/(numRows);
+  for (var i = 1; i <= numRows; i+=i) {
+    for (var j = 1; j <= numCols; j+=j) {
+      pts.push(createVector((j - j/2) * gridW + margin, (i - i/2) * gridH + margin));
+      pts.push(createVector((j - j/2) * gridW + margin, (i) * gridH + margin));
+      pts.push(createVector((j) * gridW + margin, (i) * gridH + margin));
+      pts.push(createVector((j) * gridW + margin, (i - i/2) * gridH + margin));
+      if (pts.length % 4 == 0) {
+        knotCells.push(new KnotCell(pts.slice(-4)));
+      }
+    }
+  }
+}
+
+function generateRingPattern(numSectors, numRings) {
   var da = (Math.PI * 2) / numSectors;
   var ringStep = (height/2 - margin*2)/ numRings;
   
@@ -68,7 +84,10 @@ function generateKnotCells() {
       generateMatrixPattern(numC, numR);
       break;
     case 1:
-      generateRingPatern(numC, numR);
+      generateRingPattern(numC, numR);
+      break;
+    case 2:
+      generatePerspPattern(numC, numR);
       break;
 
   }
